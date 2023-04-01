@@ -2,3 +2,58 @@ Results:
 When reading 4, 4mb textfiles and writing to 4 different output files, each in a different thread
 the operation took 185.447 ms
 When reading and writing these files sequentially, the time taken was: 626.377 ms
+
+Both are pretty slow, as it reads and writes the entire contents as a string
+
+Retrying threading with binary mode:
+182.114
+The results show that stringstream buffer is really bad
+
+retrying with a dynamic vector buffer:
+1048 ms 1.04 SECONDS!
+this is terrible speed, probably because the vector has to first be initialized with the elements of the file input system
+
+Notes on buffer:
+In the multithread.cpp file, all data is read into a buffer, as the files are only 4mb and I have 16gb of RAM this is fine.
+However large memory allocations can contribute to memory fragmentation and diminishing returns.
+
+
+differing buffer sizes tests:
+reading and writing the same files, using the threading method, except this time with a buffer of 4kb gives a time of:
+21.5097 ms
+Using a buffer of 1kb:
+20.4455 ms
+From the results it seems like bigger != better for buffer size
+Using a 1mb buffer: (visual studio told me to consider moving data to heap)
+stack overflow error, no data was written
+This is because the program used more memory on the call stack than what is available.
+The call stack is a region of memory where LOCAL variables, function parameters and return addressed are stored
+during the execution of a program, each thread has its own stack.
+By instead doing: char* buffer = new char[BUFFER_1MB] , we can allocate the memory to the heap, and it is deallocated when using 
+delete[] buffer;
+The heap is a seperate region of memory, that is generally larger than the stack, and is used for dynamic memory allocation
+Repeating the process gave a time of:
+11.146 ms
+
+Since we have 4 files of 4mb each, lets try a buffer of 20mb on the heap, so the buffer can hold the data for each file:
+time of: 28.7823 ms
+This could be because increased memory usage can cause performance to slow down, and the cost is greater than more i/o operations
+The higher buffer size may not fit entirely into the cpu cache and cause cache misses
+cache misses occur when the cpu has to fetch data from the main memory more often
+HOWEVER: i am using a Ryzen 5 5600X which has 32mb of l3 cache, which should theoretically have enough, however some is probably being used by background processes
+but realistically I dont think this will cause any cache misses, so the slower time is probably due to the time taken to allocate 20 mb of memory.
+Now that I think about it, each file thread is getting allocated 20 mb, which means it is actually 80mb which is more time for allocated memory.
+it's worth noting that the amount of memory used by each thread may not directly correspond to the amount of cache memory used by the CPU. 
+The CPU cache is a limited resource that is shared among all threads,
+
+BUFFER SIZE OF 4.1 MB: since our files are 4mb each lets try a buffer size of 4.1 mb and see if it leads to optimal performance.
+Each thread will thus have 4.1mb allocated
+time: 15.5251ms
+very interesting.
+
+It seems like a buffer of 1mb on the heap is the winner for now, although I am interested to see how 50kb would fair on the stack.
+
+
+
+
+
