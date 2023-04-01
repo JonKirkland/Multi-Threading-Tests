@@ -1,0 +1,4 @@
+Results:
+When reading 4, 4mb textfiles and writing to 4 different output files, each in a different thread
+the operation took 185.447 ms
+When reading and writing these files sequentially, the time taken was: 626.377 ms
