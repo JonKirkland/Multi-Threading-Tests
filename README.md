@@ -4,4 +4,4 @@
  
  included are 4, 4 mb text files on which the tests were performed.
  
- See Results and Notes textbox for findings.
+ See Results and Notes.text for findings.
