@@ -128,7 +128,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="MultiThread.cpp" />
-    <ClCompile Include="Optimizations.cpp" />
+    <ClCompile Include="AsyncOptimizations.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="Results and Notes.txt" />
