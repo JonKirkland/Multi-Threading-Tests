@@ -13,11 +13,6 @@ retrying with a dynamic vector buffer:
 1048 ms 1.04 SECONDS!
 this is terrible speed, probably because the vector has to first be initialized with the elements of the file input system
 
-Notes on buffer:
-In the multithread.cpp file, all data is read into a buffer, as the files are only 4mb and I have 16gb of RAM this is fine.
-However large memory allocations can contribute to memory fragmentation and diminishing returns.
-
-
 differing buffer sizes tests:
 reading and writing the same files, using the threading method, except this time with a buffer of 4kb gives a time of:
 21.5097 ms
@@ -53,7 +48,19 @@ very interesting.
 
 It seems like a buffer of 1mb on the heap is the winner for now, although I am interested to see how 50kb would fair on the stack.
 
+OPTIMIZATIONS:
+Let's see if we can speed up the process, we are going to be using the 1MB buffer on the heap since that proved to be the fastest.
+See Optmizations.cpp
+First I am going to try changing the I/O operation to asynchronous. It seems like Async I/O is commonly used in applications that need
+to handle large amount of data, or perform I/O operations concurrently with other tasks. It is typically implemented using the std::async function
+which creates a new thread or uses an existing thread from a pool, to execute a function asynchronously. Using a std::async function, it will return an
+std::future object, which is used to get the result of the async function when it becomes available. Std::future is an object which represents a value 
+that will become available at some point in the future.
+So using std::async we get rid of the threads with a set of futures, that represent the outcomes of the file I/O,
+we are letting std::async to do the threading for us. Meaning we don't have to explicitly create threads and will perform the operation without blocking.
+Even though we used 4 parralel threads earlier, each individual I/O operation was performed synchronously, meaning each file had to be read before being written.
+Async allows for reading and writing at the same time and also performing calculations if need be.
 
-
+ASYNCHRONOUS RESULTS: 8.853 ms, fastest time yet!
 
 
